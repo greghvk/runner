@@ -18,7 +18,7 @@ var (
 )
 
 func main(){
-	
+	geo.API_KEY = os.Getenv("ROUTES_KEY")
 	http.HandleFunc("/route", routeHandler)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	port := os.Getenv("port")

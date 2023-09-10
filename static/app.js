@@ -74,8 +74,9 @@ const doGeneratePath = async (distance) => {
   const el = await response.json();
   console.log(el);
   decodedPath = google.maps.geometry.encoding.decodePath(el.polyLine);
-  // decodedLvls = google.maps.geometry.encoding.decodeLevels("BBBB");
-  // decodedLevels = goog;
+  document.getElementById("outputBox").textContent =
+    "Actual path distance (m): " + el.distance;
+  document.getElementById("outputBox").removeAttribute("hidden");
   if (poly) {
     poly.setMap(null);
   }
@@ -136,7 +137,7 @@ const pointToCircle = (pt) => {
   const circle = new google.maps.Marker({
     position: pt,
     map,
-    icon: image,
+    icon: null,
   });
 
   return circle;

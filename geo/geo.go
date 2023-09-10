@@ -15,6 +15,7 @@ import (
 
 // Earth radius in KM
 const earthRadius = 6371.0
+var API_KEY string
 // const url = "https://routes.googleapis.com/directions/v2:computeRoutes"
 
 type Point struct {
@@ -76,10 +77,9 @@ type QueryParams struct {
 
 type RouteResponse struct {
 	PolyLine string `json:"polyLine"`
-	Points []Point `json:"points`
+	Points []Point `json:"Points"`
+	Distance int `json:"distance"`
 }
-
-
 
 func ParseRouteQueryParams(params url.Values) (QueryParams, error) {
 	distance, err := strconv.ParseFloat(params.Get("distance"), 64); 
@@ -112,11 +112,11 @@ func GetRouteData(params QueryParams) (RouteResponse, error) {
 	// p2 := RandomPointOnCircleWithRadius(p1, params.distance)
 	p2, p3 := GenerateTrianglePoints(p1, params.distance / 2)
 	// fmt.Println("first point: %f, %f, generated point: %f, %f", p1.Lat, p1.Lng, p2.Lat, p2.Lng)
-	poly, err := getPolyLine(p1, p2, p3, p1)	
+	resp, err := getPolyLine(p1, p2, p3, p1)	
 	if err != nil {
 		return RouteResponse{}, fmt.Errorf("cannot get route data: %s", err.Error())
 	}
-	return RouteResponse{poly, []Point{p1, p2, p3}}, nil
+	return resp, nil
 }
 
 func PlaceFromPoint(p Point) Place {
@@ -147,37 +147,37 @@ func GetRequestBody(p []Point) ([]byte, error) {
 	return json.Marshal(body)
 }
 
-func getPolyLine(points ...Point) (string, error) {
+func getPolyLine(points ...Point) (RouteResponse, error) {
 	if len(points) < 2 {
-		return "", errors.New("too few points to create a route")
+		return RouteResponse{}, errors.New("too few points to create a route")
 	}
 
 	
 	url := "https://routes.googleapis.com/directions/v2:computeRoutes"
 	body, err := GetRequestBody(points)
 	if err != nil {
-		return "", fmt.Errorf("cannot get req body: %s", err.Error())
+		return RouteResponse{}, fmt.Errorf("cannot get req body: %s", err.Error())
 	}
 	
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Println("cannot create url: ", err.Error())
-		return "", fmt.Errorf("cannot create url: %s", err.Error())
+		return RouteResponse{}, fmt.Errorf("cannot create url: %s", err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Goog-Api-Key", "AIzaSyCeCRjWtqsHZGds5QmZzxuro7oVbXRlMTQ")
+	req.Header.Set("X-Goog-Api-Key", API_KEY)
 	req.Header.Set("X-Goog-FieldMask", "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline")
 
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("cannot do url request: %s", err.Error())
+		return RouteResponse{}, fmt.Errorf("cannot do url request: %s", err.Error())
 	}
 	defer resp.Body.Close()
 
 	var rspBody Response
 	json.NewDecoder(resp.Body).Decode(&rspBody)
 	fmt.Printf("Resp: %v", rspBody)
-	return rspBody.Routes[0].Polyline.EncodedPolyline, nil
+	return RouteResponse{rspBody.Routes[0].Polyline.EncodedPolyline, points, rspBody.Routes[0].DistanceMeters}, nil
 }

@@ -58,6 +58,7 @@ function showPosition(position) {
 }
 
 const doGeneratePath = async (distance) => {
+  map.setCenter(userLocation);
   if (!lat || !lng) {
     console.log("unset!");
     return;

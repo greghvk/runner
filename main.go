@@ -10,8 +10,6 @@ import (
 	"os"
 )
 
-// const hardcodedPoly = "sbx}Ho}f_Ci@F]XMR?v@Jp@LZFJp@bCVvAPtAp@fEdBfOb@`Dj@lFf@xDl@~FNdA~@zEhBrN|CzVjDdXb@vDTlADZL?NVtHvGl[~WdJhIfAz@j@\\VTf@}BRyA@YlMXp@KbD_AbAExHKPKHO~@s^Iu@Wg@eBa@aAWH{@?oAcAG?@"
-
 var (
 	buf    bytes.Buffer
 	logger = log.New(&buf, "logger: ", log.Lshortfile)
@@ -56,6 +54,5 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(RouteResponse{"ipkcFjichVzQ@d@gU{E?"})
 	json.NewEncoder(w).Encode(resp)
 }

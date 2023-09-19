@@ -16,7 +16,6 @@ import (
 // Earth radius in KM
 const earthRadius = 6371.0
 var API_KEY string
-// const url = "https://routes.googleapis.com/directions/v2:computeRoutes"
 
 type Point struct {
 	Lat float64 `json:"lat"`
@@ -109,9 +108,7 @@ func CheckParams(params QueryParams) error {
 
 func GetRouteData(params QueryParams) (RouteResponse, error) {
 	p1 := params.point
-	// p2 := RandomPointOnCircleWithRadius(p1, params.distance)
 	p2, p3 := GenerateTrianglePoints(p1, params.distance / 2)
-	// fmt.Println("first point: %f, %f, generated point: %f, %f", p1.Lat, p1.Lng, p2.Lat, p2.Lng)
 	resp, err := getPolyLine(p1, p2, p3, p1)	
 	if err != nil {
 		return RouteResponse{}, fmt.Errorf("cannot get route data: %s", err.Error())

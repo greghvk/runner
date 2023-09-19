@@ -31,8 +31,7 @@ function readUserDistanceAndTryGenerating() {
 
 const WARSAW = { lat: 52.2297, lng: 21.0122 };
 
-// callback to show position
-// loc = navigator.geolocation.getCurrentPosition(showPosition);
+loc = navigator.geolocation.getCurrentPosition(showPosition);
 
 function refillWaypoints(resp) {
   clearWaypoints();
@@ -49,23 +48,24 @@ function clearWaypoints() {
 }
 
 function showPosition(position) {
-  // const lat = position.coords.latitude;
-  // const lng = position.coords.longitude;
-  lat = position.lat;
-  lng = position.lng;
+  lat = position.coords.latitude;
+  lng = position.coords.longitude;
+  document.getElementById("generatePath").textContent = "Generate!";
 
   userLocation = { lat, lng };
   map.setCenter(userLocation);
   pointToCircle(userLocation);
-  // var element = document.getElementById("map");
-  // element.removeAttribute("hidden");
 }
 
 const doGeneratePath = async (distance) => {
+  if (!lat || !lng) {
+    console.log("unset!");
+    return;
+  }
   const url = "/route";
   payload = {
-    lat: WARSAW.lat,
-    lng: WARSAW.lng,
+    lat: lat,
+    lng: lng,
     distance: distance,
   };
   const queryParams = new URLSearchParams(payload).toString();
@@ -93,19 +93,12 @@ const doGeneratePath = async (distance) => {
 
 async function initialize() {
   initMap();
-  showPosition(WARSAW);
-  doGeneratePath(5);
 }
 
 const initMap = () => {
-  // TODO: Start Distance Matrix service
-
-  // The map, centered on Austin, TX
   map = new google.maps.Map(document.querySelector("#map"), {
     center: WARSAW,
-    // zoom: 14,
     zoom: 12,
-    // mapId: 'YOUR_MAP_ID_HERE',
     clickableIcons: false,
     fullscreenControl: false,
     mapTypeControl: false,
@@ -114,14 +107,6 @@ const initMap = () => {
     streetViewControl: true,
     zoomControl: true,
   });
-};
-
-const fetchAndRenderStores = async (center) => {
-  // Fetch the stores from the data source
-  stores = (await fetchStores(center)).features;
-
-  // Create circular markers based on the stores
-  circles = stores.map((store) => storeToCircle(store, map));
 };
 
 const fetchStores = async (center) => {
@@ -133,7 +118,6 @@ const fetchStores = async (center) => {
 const image =
   "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
 const pointToCircle = (pt) => {
-  // const [lng, lat] = store.geometry.coordinates;
   const circle = new google.maps.Marker({
     position: pt,
     map,
